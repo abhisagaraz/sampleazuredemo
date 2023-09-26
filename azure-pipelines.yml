@@ -33,4 +33,4 @@ steps:
         dockerfile: 'src/Dockerfile'
         containerRegistry: 'docerdemosampleregistry'
         tags: |
-          $(tag)
+          $(Build.BuildId)
