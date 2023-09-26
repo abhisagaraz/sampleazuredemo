@@ -1,0 +1,35 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+    - task: Maven@3
+      displayName: 'Maven pom.xml'
+      inputs:
+        options: '-DskipITs --settings ./maven/settings.xml'
+        publishJUnitResults: false
+    - task: CopyFiles@2
+      displayName: Copy WAR file to staging directory
+      inputs:
+        sourceFolder: '$(build.sourcesdirectory)'
+        contents: |
+          target/myshuttledev*.war
+          *.sql
+        targetFolder: '$(build.artifactstagingdirectory)'
+    - task: Docker@2
+      displayName: Build and push Java container image to registry
+      inputs:
+        command: buildAndPush
+        buildContext: '$(build.artifactstagingdirectory)'
+        repository: $(webRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: 'Container Registry Connection'
+        tags: |
+          $(tag)
